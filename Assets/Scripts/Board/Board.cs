@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+[System.Serializable]
 public class Board
 {
     public enum eMatchDirection
@@ -24,6 +25,8 @@ public class Board
     private Transform m_root;
 
     private int m_matchMin;
+
+    private Dictionary<NormalItem.eNormalType, int> boardNormalItemsCountDictionary = new Dictionary<NormalItem.eNormalType, int>();
 
     public Board(Transform transform, GameSettings gameSettings)
     {
@@ -100,7 +103,18 @@ public class Board
                     }
                 }
 
-                item.SetType(Utils.GetRandomNormalTypeExcept(types.ToArray()));
+                NormalItem.eNormalType normalItemType = Utils.GetRandomNormalTypeExcept(types.ToArray());
+                item.SetType(normalItemType);
+
+                if (!boardNormalItemsCountDictionary.ContainsKey(normalItemType))
+                {
+                    boardNormalItemsCountDictionary.Add(normalItemType, 1);
+                }
+                else
+                {
+                    boardNormalItemsCountDictionary[normalItemType]++;
+                }
+
                 item.SetView();
                 item.SetViewRoot(m_root);
 
@@ -136,18 +150,86 @@ public class Board
     }
 
 
+    List<NormalItem.eNormalType> listNeightborItem = new List<NormalItem.eNormalType>();
     internal void FillGapsWithNewItems()
     {
         for (int x = 0; x < boardSizeX; x++)
         {
             for (int y = 0; y < boardSizeY; y++)
             {
+                listNeightborItem.Clear();
+
                 Cell cell = m_cells[x, y];
                 if (!cell.IsEmpty) continue;
 
+                if (cell.NeighbourUp != null && !cell.NeighbourUp.IsEmpty && cell.NeighbourUp.Item.GetType() == typeof(NormalItem))
+                {
+                    listNeightborItem.Add(((NormalItem)cell.NeighbourUp.Item).ItemType);
+                }
+
+                if (cell.NeighbourBottom != null && !cell.NeighbourBottom.IsEmpty && cell.NeighbourBottom.Item.GetType() == typeof(NormalItem))
+                {
+                    listNeightborItem.Add(((NormalItem)cell.NeighbourBottom.Item).ItemType);
+                }
+
+                if (cell.NeighbourRight != null && !cell.NeighbourRight.IsEmpty && cell.NeighbourRight.Item.GetType() == typeof(NormalItem))
+                {
+                    listNeightborItem.Add(((NormalItem)cell.NeighbourRight.Item).ItemType);
+                }
+
+                if (cell.NeighbourLeft != null && !cell.NeighbourLeft.IsEmpty && cell.NeighbourLeft.Item.GetType() == typeof(NormalItem))
+                {
+                    listNeightborItem.Add(((NormalItem)cell.NeighbourLeft.Item).ItemType);
+                }
+
                 NormalItem item = new NormalItem();
 
-                item.SetType(Utils.GetRandomNormalType());
+                NormalItem.eNormalType normalItemTypeChoosen = NormalItem.eNormalType.TYPE_ONE;
+
+                for (int i = 0; i < listNeightborItem.Count; ++i)
+                {
+                    Debug.LogError($"LIST NEIGHBOR ITEM : {listNeightborItem[i]}");
+                }
+
+                //Lay danh sach cac normal type co the chon (Ngoai tru cac normal type o cac item xung quanh : Trai - phai - len - xuong)
+                List<NormalItem.eNormalType> listItemNormalTypeCanChoose = Utils.GetListNormalTypeExcept(listNeightborItem.ToArray());
+
+                //Logic : Neu danh sach cac normal type tra ve = 0 => cac phan tu up / down / left / right chua day du tat ca cac kieu cu cell
+                if (listItemNormalTypeCanChoose.Count == 0)
+                {
+                    normalItemTypeChoosen = Utils.GetRandomNormalType();
+                }
+                else
+                {
+                    //Dat gia tri min xuat hien cua phan tu, neu trong Dictionary tat ca cac phan tu, khong chua phan tu tren thi cho so lan xuat hien = 0
+                    int mininumItemAppearTime = boardNormalItemsCountDictionary.ContainsKey(listItemNormalTypeCanChoose[0]) ? 0 : boardNormalItemsCountDictionary[listItemNormalTypeCanChoose[0]];
+
+                    //Dat kieu item duoc chon o phan tu 0
+                    normalItemTypeChoosen = listItemNormalTypeCanChoose[0];
+
+                    //Duyet qua tat ca cac phan tu bat dau tu 1 trong danh sach normal item, neu phan tu nao co so lan xuat hien be hon gia tri xuat hien be nhat, gan phan tu do vao lai phan tu duoc sinh
+                    for (int indexItemNormalTypeCanChoose = 1; indexItemNormalTypeCanChoose < listItemNormalTypeCanChoose.Count; ++indexItemNormalTypeCanChoose)
+                    {
+                        int itemAppearTime = boardNormalItemsCountDictionary.ContainsKey(listItemNormalTypeCanChoose[indexItemNormalTypeCanChoose]) ? 0 : boardNormalItemsCountDictionary[listItemNormalTypeCanChoose[0]];
+
+                        if (itemAppearTime < mininumItemAppearTime)
+                        {
+                            normalItemTypeChoosen = listItemNormalTypeCanChoose[indexItemNormalTypeCanChoose];
+                        }
+                    }
+                }
+
+                item.SetType(normalItemTypeChoosen);
+
+                if (!boardNormalItemsCountDictionary.ContainsKey(normalItemTypeChoosen))
+                {
+                    boardNormalItemsCountDictionary.Add(normalItemTypeChoosen, 1);
+                }
+                else
+                {
+                    boardNormalItemsCountDictionary[normalItemTypeChoosen]++;
+                }
+
                 item.SetView();
                 item.SetViewRoot(m_root);
 
