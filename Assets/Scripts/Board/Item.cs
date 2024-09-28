@@ -25,7 +25,7 @@ public class Item
             if (prefab)
             {
                 View = GameObject.Instantiate(prefab).transform;
-                SpriteRenderer = GameObject.Instantiate(prefab).GetComponent<SpriteRenderer>();
+                SpriteRenderer = View.GetComponent<SpriteRenderer>();
             }
         }
     }
