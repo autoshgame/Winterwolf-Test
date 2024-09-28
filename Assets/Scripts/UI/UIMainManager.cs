@@ -10,6 +10,7 @@ public class UIMainManager : MonoBehaviour
     private IMenu[] m_menuList;
 
     private GameManager m_gameManager;
+    private GameManager.eLevelMode currentLevelMode = GameManager.eLevelMode.TIMER;
 
     private void Awake()
     {
@@ -107,15 +108,23 @@ public class UIMainManager : MonoBehaviour
     internal void LoadLevelMoves()
     {
         m_gameManager.LoadLevel(GameManager.eLevelMode.MOVES);
+        currentLevelMode = GameManager.eLevelMode.MOVES;
     }
 
     internal void LoadLevelTimer()
     {
         m_gameManager.LoadLevel(GameManager.eLevelMode.TIMER);
+        currentLevelMode = GameManager.eLevelMode.TIMER;
     }
 
     internal void ShowGameMenu()
     {
         m_gameManager.SetState(GameManager.eStateGame.GAME_STARTED);
+    }
+
+    internal void Replay()
+    {
+        m_gameManager.ClearLevel();
+        m_gameManager.LoadLevel(currentLevelMode);
     }
 }
