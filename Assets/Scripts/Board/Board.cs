@@ -75,16 +75,18 @@ public class Board
 
     }
 
+    List<NormalItem.eNormalType> types = new List<NormalItem.eNormalType>();
     internal void Fill()
     {
         for (int x = 0; x < boardSizeX; x++)
         {
             for (int y = 0; y < boardSizeY; y++)
             {
+                types.Clear();
+
                 Cell cell = m_cells[x, y];
                 NormalItem item = new NormalItem();
 
-                List<NormalItem.eNormalType> types = new List<NormalItem.eNormalType>();
                 if (cell.NeighbourBottom != null)
                 {
                     NormalItem nitem = cell.NeighbourBottom.Item as NormalItem;

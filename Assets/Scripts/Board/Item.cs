@@ -11,6 +11,8 @@ public class Item
 
     public Transform View { get; private set; }
 
+    public SpriteRenderer SpriteRenderer { get; private set; }
+
 
     public virtual void SetView()
     {
@@ -19,9 +21,11 @@ public class Item
         if (!string.IsNullOrEmpty(prefabname))
         {
             GameObject prefab = Resources.Load<GameObject>(prefabname);
+            
             if (prefab)
             {
                 View = GameObject.Instantiate(prefab).transform;
+                SpriteRenderer = GameObject.Instantiate(prefab).GetComponent<SpriteRenderer>();
             }
         }
     }
@@ -60,10 +64,11 @@ public class Item
     {
         if (View == null) return;
 
-        SpriteRenderer sp = View.GetComponent<SpriteRenderer>();
-        if (sp)
+        //SpriteRenderer sp = View.GetComponent<SpriteRenderer>();
+        
+        if (SpriteRenderer)
         {
-            sp.sortingOrder = 1;
+            SpriteRenderer.sortingOrder = 1;
         }
     }
 
@@ -72,10 +77,9 @@ public class Item
     {
         if (View == null) return;
 
-        SpriteRenderer sp = View.GetComponent<SpriteRenderer>();
-        if (sp)
+        if (SpriteRenderer)
         {
-            sp.sortingOrder = 0;
+            SpriteRenderer.sortingOrder = 0;
         }
 
     }
@@ -134,6 +138,7 @@ public class Item
         {
             GameObject.Destroy(View.gameObject);
             View = null;
+            SpriteRenderer = null;
         }
     }
 }
